@@ -1,28 +1,29 @@
 <!DOCTYPE html>
 <html>
 <head>
-<script src="../js/data.js"></script>
+  <meta charset="UTF-8" />
+  <script src="../js/data.js"></script>
 </head>
 <body>
 
 <h2>Quản lý sản phẩm</h2>
 
-<table>
+<table border="1" cellpadding="6">
 <tr>
-<th>ID</th>
+<th>STT</th>
 <th>Tên</th>
 <th>Giá</th>
 </tr>
 
 <script>
-products.forEach(p=>{
-document.write(`
-<tr>
-<td>${p.id}</td>
-<td>${p.name}</td>
-<td>${p.price}</td>
-</tr>
-`);
+products.forEach((p, index) => {
+  document.write(`
+  <tr>
+    <td>${index + 1}</td>
+    <td>${p.name}</td>
+    <td>${p.price}</td>
+  </tr>
+  `);
 });
 </script>
 

@@ -25,44 +25,70 @@ exports.getProfile = async (req, res) => {
 
 exports.updateProfile = async (req, res) => {
   try {
-    const { stage_name, full_name, biography, partner, mascot, works, image } = req.body;
     const pool = await connectDB();
 
-    const checkArtist = await pool.request()
+    const artistResult = await pool.request()
       .input("user_id", sql.Int, req.user.user_id)
       .query(`
-        SELECT artist_id
+        SELECT *
         FROM artists
         WHERE user_id = @user_id
       `);
 
-    if (checkArtist.recordset.length === 0) {
+    if (artistResult.recordset.length === 0) {
       return errorResponse(res, "Không tìm thấy hồ sơ nghệ sĩ", 404);
     }
 
-    await pool.request()
-      .input("user_id", sql.Int, req.user.user_id)
-      .input("stage_name", sql.NVarChar, stage_name || null)
-      .input("full_name", sql.NVarChar, full_name || null)
-      .input("biography", sql.NVarChar, biography || null)
-      .input("partner", sql.NVarChar, partner || null)
-      .input("mascot", sql.NVarChar, mascot || null)
-      .input("works", sql.NVarChar, works || null)
-      .input("image", sql.NVarChar, image || null)
+    const currentArtist = artistResult.recordset[0];
+
+    const newData = {
+      stage_name: req.body.stage_name,
+      full_name: req.body.full_name,
+      biography: req.body.biography,
+      partner: req.body.partner,
+      mascot: req.body.mascot,
+      works: req.body.works,
+      image: req.body.image
+    };
+
+    const requestResult = await pool.request()
+      .input("artist_id", sql.Int, currentArtist.artist_id || currentArtist.id)
+      .input("requested_by", sql.Int, req.user.user_id)
+      .input("old_data", sql.NVarChar(sql.MAX), JSON.stringify(currentArtist))
+      .input("new_data", sql.NVarChar(sql.MAX), JSON.stringify(newData))
       .query(`
-        UPDATE artists
-        SET stage_name = ISNULL(@stage_name, stage_name),
-            full_name = ISNULL(@full_name, full_name),
-            biography = ISNULL(@biography, biography),
-            partner = ISNULL(@partner, partner),
-            mascot = ISNULL(@mascot, mascot),
-            works = ISNULL(@works, works),
-            image = ISNULL(@image, image),
-            updated_at = GETDATE()
-        WHERE user_id = @user_id
+        INSERT INTO artist_profile_update_requests (artist_id, requested_by, old_data, new_data, status, requested_at)
+        OUTPUT INSERTED.id
+        VALUES (@artist_id, @requested_by, @old_data, @new_data, 'pending', GETDATE())
       `);
 
-    return successResponse(res, "Cập nhật hồ sơ nghệ sĩ thành công");
+    const requestId = requestResult.recordset?.[0]?.id;
+
+    const adminResult = await pool.request().query(`
+      SELECT id
+      FROM users
+      WHERE role = 'admin' AND status = 'active'
+    `);
+
+    for (const admin of adminResult.recordset) {
+      await pool.request()
+        .input("receiver_user_id", sql.Int, admin.id)
+        .input("sender_user_id", sql.Int, req.user.user_id)
+        .input("type", sql.NVarChar, "artist_profile_update")
+        .input("title", sql.NVarChar, "Yêu cầu cập nhật hồ sơ nghệ sĩ")
+        .input("message", sql.NVarChar, `Nghệ sĩ ${currentArtist.stage_name || currentArtist.full_name || ""} vừa gửi yêu cầu cập nhật hồ sơ.`)
+        .input("reference_id", sql.Int, requestId || null)
+        .query(`
+          INSERT INTO notifications (receiver_user_id, sender_user_id, type, title, message, reference_id, created_at)
+          VALUES (@receiver_user_id, @sender_user_id, @type, @title, @message, @reference_id, GETDATE())
+        `);
+    }
+
+    return successResponse(
+      res,
+      "Đã gửi yêu cầu cập nhật hồ sơ cho admin duyệt. Hồ sơ sẽ được cập nhật sau khi admin phê duyệt.",
+      { request_id: requestId, status: "pending" }
+    );
   } catch (error) {
     return errorResponse(res, error.message, 500);
   }
