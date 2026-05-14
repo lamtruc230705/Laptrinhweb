@@ -338,7 +338,7 @@
 
        <div class="users-table">
             <div class="table-header">
-                <div>ID</div>
+                <div>STT</div>
                 <div>Tên người dùng</div>
                 <div>Email</div>
                 <div>Số điện thoại</div>
@@ -417,9 +417,9 @@
                 return;
             }
 
-            body.innerHTML = users.map(user => `
+            body.innerHTML = users.map((user, index) => `
                 <div class="table-row" data-user-id="${user.id}">
-                    <div>#${user.id}</div>
+                    <div>${index + 1}</div>
 
                     <div>
                         ${escapeHTML(user.full_name || user.username)}

@@ -432,7 +432,7 @@
                     <div><strong>${o.order_code || ('#' + Number(o.id))}</strong></div>
                     <div>${o.customer_name || o.customer_email || 'Khách hàng'}</div>
                     <div>${o.item_summary || 'Nhiều sản phẩm'}</div>
-                    <div class="order-info"><div class="order-info-item"><strong>Tổng:</strong> ${formatVND(o.total_amount)}</div></div>
+                    <div class="order-info"><div class="order-info-item"><strong>Doanh thu đơn:</strong> ${formatVND(o.artist_subtotal || 0)}</div></div>
                     <div><span class="status-badge ${statusClass(o.status)}">${statusLabel(o.status)}</span></div>
                     <div class="time-updated">${formatDateTime(o.created_at)}</div>
                     <div class="btn-group"><button class="btn-view" data-id="${Number(o.id)}">Chi tiết</button><button class="btn-edit" data-id="${Number(o.id)}">Cập nhật</button><button class="btn-delete" data-id="${Number(o.id)}">Xóa</button></div>

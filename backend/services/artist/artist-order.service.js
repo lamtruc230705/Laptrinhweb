@@ -1,4 +1,4 @@
-const { query, execute } = require('../../config/database');
+const { query, execute, transaction } = require('../../config/database');
 
 function createHttpError(message, statusCode = 400) {
   const error = new Error(message);
@@ -41,7 +41,37 @@ async function getOrderDetail(userId, orderId) {
 
 async function updateOrderStatus(userId, orderId, status) {
   await ensureArtistOwnsOrderItem(userId, orderId);
-  await execute('UPDATE orders SET status = ? WHERE id = ?', [status, orderId]);
+
+  await transaction(async (connection) => {
+    await connection.execute('UPDATE orders SET status = ? WHERE id = ?', [status, orderId]);
+
+    if (status === 'delivered') {
+      const [artistRows] = await connection.execute('SELECT id FROM artists WHERE user_id = ? LIMIT 1', [userId]);
+      if (artistRows.length) {
+        const artistId = artistRows[0].id;
+        const [orders] = await connection.execute('SELECT order_code FROM orders WHERE id = ? LIMIT 1', [orderId]);
+        const orderCode = orders[0]?.order_code || `#${orderId}`;
+        const [sumRows] = await connection.execute(
+          "SELECT COALESCE(SUM(total_price),0) AS amount FROM order_items WHERE order_id = ? AND seller_user_id = ? AND seller_role = 'artist'",
+          [orderId, userId]
+        );
+        const amount = Number(sumRows[0]?.amount || 0);
+
+        const [exists] = await connection.execute(
+          "SELECT id FROM artist_earnings WHERE artist_id = ? AND description = ? LIMIT 1",
+          [artistId, `Doanh thu don hang ${orderCode}`]
+        );
+
+        if (!exists.length && amount > 0) {
+          await connection.execute(
+            "INSERT INTO artist_earnings (artist_id, description, amount, status, earning_date) VALUES (?, ?, ?, 'paid', CURRENT_DATE())",
+            [artistId, `Doanh thu don hang ${orderCode}`, amount]
+          );
+        }
+      }
+    }
+  });
+
   return getOrderDetail(userId, orderId);
 }
 

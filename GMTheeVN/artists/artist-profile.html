@@ -430,8 +430,8 @@
                 partner_name: fields.partner().value.trim(),
                 mascot: fields.mascot().value.trim()
             };
-            await APIClient.updateArtistProfile(payload);
-            alert('Hồ sơ đã được cập nhật thành công!');
+            await APIClient.requestArtistProfileUpdate(payload);
+            alert('Đã gửi yêu cầu cập nhật hồ sơ cho admin duyệt.');
             goBack();
         }
 

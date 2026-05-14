@@ -80,29 +80,86 @@ Muộn rồi mà sao còn | 2021"></textarea>
     </form>
   </div>
 
-  <script src="../app.js"></script>
+    <script src="../app.js"></script>
   <script>
-    // Code load và xử lý dữ liệu nghệ sĩ ở đây
-    async function loadArtistUserOptions() {
-      try {
-        const users = await APIClient.getAdminUsers();
-        const artists = await APIClient.getAdminArtists();
-        
-        const userSelect = document.getElementById('user_id');
-        userSelect.innerHTML = '<option value="">-- Chọn Gmail tài khoản artist --</option>';
+    const params = new URLSearchParams(window.location.search);
+    const artistId = Number(params.get('id'));
 
-        users.data.filter(user => user.role === 'artist').forEach(user => {
-          const option = document.createElement('option');
-          option.value = user.id;
-          option.textContent = user.email;
-          userSelect.appendChild(option);
-        });
-      } catch (error) {
-        console.error('Error loading users', error);
-      }
+    function setValue(id, value) { document.getElementById(id).value = value ?? ''; }
+
+    function normalizeWorksInput(works) {
+      if (!Array.isArray(works)) return '';
+      return works.map((w) => `${w.title || ''}${w.release_year ? ' | ' + w.release_year : ''}`.trim()).join('\n');
     }
 
-    loadArtistUserOptions();
+    function parseWorksInput(text) {
+      return String(text || '').split('\n').map((line) => line.trim()).filter(Boolean).map((line) => {
+        const [title, year] = line.split('|').map((x) => x.trim());
+        return { title, release_year: year ? Number(year) : null };
+      });
+    }
+
+    async function loadArtistUserOptions(selectedUserId = null) {
+      const usersRes = await APIClient.getAdminUsers();
+      const userSelect = document.getElementById('user_id');
+      userSelect.innerHTML = '<option value="">-- Chọn Gmail tài khoản artist --</option>';
+      (usersRes?.data || []).filter((u) => u.role === 'artist').forEach((user) => {
+        const option = document.createElement('option');
+        option.value = String(user.id);
+        option.textContent = user.email;
+        if (Number(selectedUserId) === Number(user.id)) option.selected = true;
+        userSelect.appendChild(option);
+      });
+    }
+
+    async function loadArtistDetail() {
+      if (!artistId) {
+        alert('Thiếu id nghệ sĩ để chỉnh sửa.');
+        window.location.href = 'admin-artists.html';
+        return;
+      }
+      const res = await APIClient.getAdminArtist(artistId);
+      const artist = res?.data || {};
+      await loadArtistUserOptions(artist.user_id);
+      setValue('stage_name', artist.stage_name);
+      setValue('full_name', artist.full_name);
+      setValue('birth_date', artist.birth_date ? String(artist.birth_date).slice(0, 10) : '');
+      setValue('artist_role', artist.artist_role);
+      setValue('height', artist.height);
+      setValue('weight', artist.weight);
+      setValue('partner_name', artist.partner_name);
+      setValue('mascot', artist.mascot);
+      setValue('description', artist.description);
+      setValue('works', normalizeWorksInput(artist.works));
+      setValue('status', artist.status || 'active');
+      const preview = document.getElementById('preview-img');
+      if (artist.image) { preview.src = APIClient.getImageUrl(artist.image); preview.style.maxWidth='180px'; }
+    }
+
+    document.getElementById('artistForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const payload = {
+        stage_name: document.getElementById('stage_name').value.trim(),
+        full_name: document.getElementById('full_name').value.trim(),
+        user_id: Number(document.getElementById('user_id').value),
+        birth_date: document.getElementById('birth_date').value || null,
+        artist_role: document.getElementById('artist_role').value.trim(),
+        height: document.getElementById('height').value.trim(),
+        weight: document.getElementById('weight').value.trim(),
+        partner_name: document.getElementById('partner_name').value.trim(),
+        mascot: document.getElementById('mascot').value.trim(),
+        description: document.getElementById('description').value.trim(),
+        works: parseWorksInput(document.getElementById('works').value),
+        status: document.getElementById('status').value
+      };
+      await APIClient.updateAdminArtist(artistId, payload);
+      alert('Cập nhật nghệ sĩ thành công.');
+      window.location.href='admin-artists.html';
+    });
+
+    document.addEventListener('DOMContentLoaded', loadArtistDetail);
   </script>
+
+
 </body>
 </html>
