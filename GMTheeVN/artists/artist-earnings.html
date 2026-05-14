@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Doanh thu - GMTheeVN</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Maven+Pro:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Maven Pro', sans-serif;
+            background: linear-gradient(135deg, #a8e6f8 0%, #b3f0ff 100%);
+            min-height: 100vh;
+        }
+
+        /* ===== HEADER ===== */
+        header {
+            background: linear-gradient(135deg, #a8e6f8 0%, #b3f0ff 100%);
+            padding: 15px 30px;
+            display: flex;
+            justify-content: flex-start;
+            align-items: center;
+            gap: 40px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            border-bottom: 3px solid rgba(0, 82, 204, 0.3);
+        }
+
+        .logo {
+            font-size: 24px;
+            font-weight: 900;
+            color: #0052cc;
+            text-decoration: none;
+            background: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            display: inline-block;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+            white-space: nowrap;
+        }
+
+        .logo:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.15);
+        }
+
+        nav {
+            display: flex;
+            gap: 30px;
+            align-items: center;
+            flex: 1;
+        }
+
+        nav a {
+            color: #000;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 15px;
+            transition: all 0.3s ease;
+        }
+
+        nav a:hover {
+            color: #0052cc;
+        }
+
+       .user-section {
+           display: flex;
+           flex-direction: column;
+           align-items: center;
+           gap: 4px;
+           font-weight: 600;
+           color: #000;
+           margin-left: auto;
+        }
+
+        .user-info {
+           display: flex;
+           align-items: center;
+           gap: 10px;
+        }
+        .user-icon {
+            width: 35px;
+            height: 35px;
+            background: #0052cc;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 20px;
+        }
+        .logout-link {
+            color: #ff5252;
+            text-decoration: none;
+            font-size: 12px;
+            font-weight: 700;
+            line-height: 1;
+            transition: all 0.3s ease;
+        }
+
+        .logout-link:hover {
+            color: #d93636;
+            text-decoration: underline;
+        }
+
+        /* ===== MAIN CONTENT ===== */
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+
+        .page-title {
+            font-size: 28px;
+            font-weight: 900;
+            color: #000;
+            margin-bottom: 30px;
+        }
+
+        .back-button {
+            background: white;
+            color: #0052cc;
+            border: 2px solid #0052cc;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 700;
+            font-family: 'Maven Pro', sans-serif;
+            font-size: 14px;
+            transition: all 0.3s ease;
+            margin-bottom: 20px;
+            display: inline-block;
+        }
+
+        .back-button:hover {
+            background: #0052cc;
+            color: white;
+        }
+
+        /* ===== EARNINGS CARDS ===== */
+        .earnings-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 40px;
+        }
+
+        .earnings-card {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .earnings-card-label {
+            font-size: 13px;
+            color: #999;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+
+        .earnings-card-amount {
+            font-size: 32px;
+            font-weight: 900;
+            color: #5555ff;
+            margin-bottom: 5px;
+        }
+
+        .earnings-card-change {
+            font-size: 13px;
+            color: #4caf50;
+        }
+
+        /* ===== EARNINGS TABLE ===== */
+        .earnings-table {
+            width: 100%;
+            background: white;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .table-header {
+            background: rgba(255, 180, 150, 0.3);
+            padding: 20px;
+            display: grid;
+            grid-template-columns: 1.5fr 2fr 1.5fr 1.5fr;
+            gap: 15px;
+            font-weight: 700;
+            border-bottom: 2px solid #f0f0f0;
+        }
+
+        .table-row {
+            padding: 20px;
+            display: grid;
+            grid-template-columns: 1.5fr 2fr 1.5fr 1.5fr;
+            gap: 15px;
+            align-items: center;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .table-row:hover {
+            background: rgba(255, 180, 150, 0.1);
+        }
+
+        .table-row:last-child {
+            border-bottom: none;
+        }
+
+        .amount {
+            font-weight: 700;
+            color: #5555ff;
+        }
+
+        /* ===== RESPONSIVE ===== */
+        @media (max-width: 768px) {
+            header {
+                flex-direction: column;
+                gap: 15px;
+            }
+
+            nav {
+                flex-direction: column;
+                gap: 15px;
+                width: 100%;
+            }
+
+            .user-section {
+                margin-left: 0;
+            }
+
+            .earnings-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .table-header,
+            .table-row {
+                grid-template-columns: 1fr;
+                gap: 10px;
+            }
+
+            .page-title {
+                font-size: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- ===== HEADER ===== -->
+    <header>
+        <a href="../home.html" class="logo">GMTheeVN</a>
+        <nav>
+            <a href="../home.html">Trang chủ</a>
+            <a href="artist_dashboard.html">Bảng điều khiển</a>
+        </nav>
+        <div class="user-section">
+            <div class="user-info">
+                <span>Nghệ sĩ</span>
+                <div class="user-icon">👤</div>
+            </div>
+            <a href="../login.html" class="logout-link" onclick="localStorage.removeItem('token'); localStorage.removeItem('user');">Đăng xuất</a>
+        </div>
+    </header>
+
+    <!-- ===== MAIN CONTENT ===== -->
+    <div class="container">
+        <button class="back-button" onclick="goBack()">← Quay lại</button>
+        <h1 class="page-title">💰 Doanh thu</h1>
+
+        <!-- Earnings Cards -->
+        <div class="earnings-grid" id="earningSummary">
+            <div class="earnings-card">
+                <div class="earnings-card-label">Tổng doanh thu</div>
+                <div class="earnings-card-amount">850.000đ</div>
+                <div class="earnings-card-change">↑ 12% so với tháng trước</div>
+            </div>
+
+            <div class="earnings-card">
+                <div class="earnings-card-label">Tháng này</div>
+                <div class="earnings-card-amount">125.000đ</div>
+                <div class="earnings-card-change">Từ 1-11/03/2026</div>
+            </div>
+
+            <div class="earnings-card">
+                <div class="earnings-card-label">Đã thanh toán</div>
+                <div class="earnings-card-amount">750.000đ</div>
+                <div class="earnings-card-change">Ngày 28/02/2026</div>
+            </div>
+
+            <div class="earnings-card">
+                <div class="earnings-card-label">Chờ thanh toán</div>
+                <div class="earnings-card-amount">100.000đ</div>
+                <div class="earnings-card-change">Thanh toán vào 31/03</div>
+            </div>
+        </div>
+
+        <!-- Earnings Table -->
+        <div class="earnings-table">
+            <div class="table-header">
+                <div>Ngày</div>
+                <div>Mô tả</div>
+                <div>Số tiền</div>
+                <div>Trạng thái</div>
+            </div>
+            <div id="earningRows"><div class="table-row"><div>Đang tải...</div><div></div><div></div><div></div></div></div>
+        </div>
+    </div>
+
+    <script src="../app.js"></script>
+    <script>
+        const formatVND = (v) => Number(v || 0).toLocaleString('vi-VN') + 'đ';
+        const formatDate = (d) => d ? new Date(d).toLocaleDateString('vi-VN') : '--';
+        function goBack() {
+            window.location.href = "dashboard.html";
+        }
+
+        function renderSummary(summary) {
+            const cards = [
+                ['Tổng doanh thu', summary.total_earned],
+                ['Tháng này', summary.this_month],
+                ['Đã thanh toán', summary.total_paid],
+                ['Chờ thanh toán', summary.pending_amount]
+            ];
+            document.getElementById('earningSummary').innerHTML = cards.map(([label, amount]) => `
+                <div class="earnings-card">
+                    <div class="earnings-card-label">${label}</div>
+                    <div class="earnings-card-amount">${formatVND(amount)}</div>
+                    <div class="earnings-card-change">Cập nhật theo dữ liệu hệ thống</div>
+                </div>
+            `).join('');
+        }
+
+        function renderRows(items) {
+            const rows = document.getElementById('earningRows');
+            if (!Array.isArray(items) || items.length === 0) {
+                rows.innerHTML = '<div class="table-row"><div>--</div><div>Chưa có dữ liệu</div><div class="amount">0đ</div><div>--</div></div>';
+                return;
+            }
+            rows.innerHTML = items.map((item) => `
+                <div class="table-row">
+                    <div>${formatDate(item.created_at || item.period_date)}</div>
+                    <div>${item.description || 'Doanh thu đơn hàng'}</div>
+                    <div class="amount">${formatVND(item.amount)}</div>
+                    <div>${item.status || 'pending'}</div>
+                </div>
+            `).join('');
+        }
+
+        async function loadEarnings() {
+            try {
+                const response = await APIClient.getArtistEarnings();
+                const data = response?.data || {};
+                renderSummary(data.summary || {});
+                renderRows(data.items || data.earnings || []);
+            } catch (error) {
+                console.error(error);
+                document.getElementById('earningRows').innerHTML = `<div class="table-row"><div>--</div><div>Không tải được dữ liệu</div><div class="amount">0đ</div><div>error</div></div>`;
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', loadEarnings);
+    </script>
+</body>
+</html>
