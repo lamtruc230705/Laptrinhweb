@@ -559,7 +559,8 @@
 
         async function loadProducts() {
             const response = await APIClient.getArtistProducts();
-            const products = response?.data || [];
+            const data = response?.data || {};
+            const products = Array.isArray(data.products) ? data.products : [];
             renderStats(products);
             renderProducts(products);
         }

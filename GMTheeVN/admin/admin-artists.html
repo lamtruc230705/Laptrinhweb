@@ -352,7 +352,7 @@
 
         <div class="artists-table">
             <div class="table-header">
-                <div>ID</div>
+                <div>STT</div>
                 <div>Tên diễn viên</div>
                 <div>Vai trò</div>
                 <div>Thông tin</div>
@@ -366,7 +366,7 @@
         <h2 style="margin-top:24px;">Yêu cầu chỉnh sửa hồ sơ nghệ sĩ</h2>
         <div class="artists-table" id="profileRequestTable">
             <div class="table-header">
-                <div>ID YC</div><div>Nghệ sĩ</div><div>Nội dung đề xuất</div><div>Trạng thái</div><div>Hành động</div>
+                <div>STT</div><div>Nghệ sĩ</div><div>Nội dung đề xuất</div><div>Trạng thái</div><div>Hành động</div>
             </div>
             <div class="table-row"><div>Đang tải...</div><div></div><div></div><div></div><div></div></div>
         </div>
@@ -384,9 +384,9 @@
                 table.innerHTML = `${header}<div class="table-row"><div>--</div><div>Chưa có nghệ sĩ</div><div>--</div><div>--</div><div>--</div><div>--</div></div>`;
                 return;
             }
-            table.innerHTML = header + artists.map((a) => `
+            table.innerHTML = header + artists.map((a, index) => `
                 <div class="table-row">
-                    <div>#${Number(a.id)}</div>
+                    <div>${index + 1}</div>
                     <div><strong>${a.stage_name || a.full_name || 'Nghệ sĩ'}</strong></div>
                     <div>${a.status || 'active'}</div>
                     <div class="artist-info">
@@ -413,11 +413,11 @@
                 table.innerHTML = `${header}<div class="table-row"><div>--</div><div>Không có yêu cầu</div><div>--</div><div>--</div><div>--</div></div>`;
                 return;
             }
-            table.innerHTML = header + items.map((r)=>{
+            table.innerHTML = header + items.map((r, index)=>{
                 const newData = r.new_data || {};
                 const preview = [`Tên: ${newData.full_name||''}`,`Sinh: ${newData.birth_date||''}`,`Chiều cao: ${newData.height||''}`,`Cân nặng: ${newData.weight||''}`,`Partner: ${newData.partner_name||''}`,`Linh vật: ${newData.mascot||''}`].join('<br>');
                 return `<div class="table-row">
-                    <div>#${r.id}</div>
+                    <div>${index + 1}</div>
                     <div>${r.artist_stage_name || r.artist_name || 'Nghệ sĩ'}</div>
                     <div class="artist-info"><div class="artist-info-item">${preview}</div></div>
                     <div>${r.status || 'pending'}</div>

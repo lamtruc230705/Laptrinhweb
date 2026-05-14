@@ -315,7 +315,7 @@
 
         <div class="shops-table">
             <div class="table-header">
-                <div>ID</div>
+                <div>STT</div>
                 <div>Tên sản phẩm</div>
                 <div>Giá</div>
                 <div>Số lượng</div>
@@ -338,9 +338,9 @@
                 rows.innerHTML = '<div class="table-row"><div>--</div><div>Chưa có sản phẩm</div><div>0đ</div><div>0</div><div>-</div></div>';
                 return;
             }
-            rows.innerHTML = products.map((p) => `
+            rows.innerHTML = products.map((p, index) => `
                 <div class="table-row">
-                    <div>#${Number(p.id)}</div>
+                    <div>${index + 1}</div>
                     <div>${p.name || 'Sản phẩm'}</div>
                     <div>${formatVND(p.price)}</div>
                     <div>${Number(p.stock || 0)}</div>
