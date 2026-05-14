@@ -1,30 +1,242 @@
 <!DOCTYPE html>
 <html>
 <head>
-<script src="../js/data.js"></script>
+  <meta charset="UTF-8" />
+  <title>Quản lý nghệ sĩ</title>
+  <script src="../js/data.js"></script>
 </head>
 <body>
+  <h2>Quản lý nghệ sĩ</h2>
 
-<h2>Quản lý nghệ sĩ</h2>
+  <table border="1" cellpadding="6">
+    <thead>
+      <tr>
+        <th>STT</th>
+        <th>Tên</th>
+        <th>Tác phẩm</th>
+        <th>Hành động</th>
+      </tr>
+    </thead>
+    <tbody id="artistTableBody"></tbody>
+  </table>
 
-<table>
-<tr>
-<th>ID</th>
-<th>Tên</th>
-</tr>
+  <h3>Chỉnh sửa nghệ sĩ</h3>
+  <form id="artistForm">
+    <input type="hidden" id="artistId" />
+    <div>
+      <label for="artistName">Tên nghệ sĩ</label><br />
+      <input type="text" id="artistName" required />
+    </div>
+    <div>
+      <label for="artistWork">Tác phẩm</label><br />
+      <input type="text" id="artistWork" required />
+    </div>
+    <div style="margin-top: 8px;">
+      <button type="submit">Lưu</button>
+      <button type="button" id="cancelEdit">Hủy</button>
+    </div>
+  </form>
 
-<script>
-artists.forEach(a=>{
-document.write(`
-<tr>
-<td>${a.id}</td>
-<td>${a.name}</td>
-</tr>
-`);
-});
-</script>
+  <hr />
 
-</table>
+  <h3>Lịch trình nghệ sĩ</h3>
+  <p id="scheduleArtistLabel">Chưa chọn nghệ sĩ.</p>
 
+  <form id="scheduleForm">
+    <input type="hidden" id="scheduleArtistId" />
+    <input type="hidden" id="scheduleId" />
+    <div>
+      <label for="scheduleTitle">Tên công việc</label><br />
+      <input type="text" id="scheduleTitle" required />
+    </div>
+    <div>
+      <label for="scheduleDate">Ngày</label><br />
+      <input type="date" id="scheduleDate" required />
+    </div>
+    <div>
+      <label for="scheduleNote">Ghi chú</label><br />
+      <input type="text" id="scheduleNote" />
+    </div>
+    <div style="margin-top: 8px;">
+      <button type="submit">Lưu lịch trình</button>
+      <button type="button" id="cancelScheduleEdit">Hủy</button>
+    </div>
+  </form>
+
+  <table border="1" cellpadding="6" style="margin-top: 10px;">
+    <thead>
+      <tr>
+        <th>STT</th>
+        <th>Công việc</th>
+        <th>Ngày</th>
+        <th>Ghi chú</th>
+        <th>Hành động</th>
+      </tr>
+    </thead>
+    <tbody id="scheduleTableBody"></tbody>
+  </table>
+
+  <script>
+    const artistTableBody = document.getElementById('artistTableBody');
+    const artistForm = document.getElementById('artistForm');
+    const artistIdInput = document.getElementById('artistId');
+    const artistNameInput = document.getElementById('artistName');
+    const artistWorkInput = document.getElementById('artistWork');
+    const cancelEditBtn = document.getElementById('cancelEdit');
+
+    const scheduleForm = document.getElementById('scheduleForm');
+    const scheduleArtistIdInput = document.getElementById('scheduleArtistId');
+    const scheduleIdInput = document.getElementById('scheduleId');
+    const scheduleTitleInput = document.getElementById('scheduleTitle');
+    const scheduleDateInput = document.getElementById('scheduleDate');
+    const scheduleNoteInput = document.getElementById('scheduleNote');
+    const scheduleTableBody = document.getElementById('scheduleTableBody');
+    const scheduleArtistLabel = document.getElementById('scheduleArtistLabel');
+    const cancelScheduleEditBtn = document.getElementById('cancelScheduleEdit');
+
+    let artistSchedules = JSON.parse(localStorage.getItem('artistSchedules')) || {};
+
+    function persistSchedules() {
+      localStorage.setItem('artistSchedules', JSON.stringify(artistSchedules));
+    }
+
+    function renderArtists() {
+      artistTableBody.innerHTML = artists
+        .map((artist, index) => `
+          <tr>
+            <td>${index + 1}</td>
+            <td>${artist.name}</td>
+            <td>${artist.work}</td>
+            <td>
+              <button type="button" onclick="startEdit(${artist.id})">Chỉnh sửa</button>
+              <button type="button" onclick="openSchedule(${artist.id})">Lịch trình</button>
+            </td>
+          </tr>
+        `)
+        .join('');
+    }
+
+    function resetForm() {
+      artistForm.reset();
+      artistIdInput.value = '';
+    }
+
+    function startEdit(id) {
+      const artist = artists.find((item) => item.id === id);
+      if (!artist) return;
+      artistIdInput.value = artist.id;
+      artistNameInput.value = artist.name || '';
+      artistWorkInput.value = artist.work || '';
+    }
+
+    function openSchedule(artistId) {
+      const artist = artists.find((item) => item.id === artistId);
+      if (!artist) return;
+
+      scheduleArtistIdInput.value = artistId;
+      scheduleArtistLabel.textContent = `Đang quản lý lịch trình cho: ${artist.name}`;
+      resetScheduleForm();
+      renderSchedules(artistId);
+    }
+
+    function getSchedulesByArtist(artistId) {
+      return artistSchedules[artistId] || [];
+    }
+
+    function renderSchedules(artistId) {
+      const list = getSchedulesByArtist(artistId);
+
+      scheduleTableBody.innerHTML = list.map((item, index) => `
+        <tr>
+          <td>${index + 1}</td>
+          <td>${item.title}</td>
+          <td>${item.date}</td>
+          <td>${item.note || ''}</td>
+          <td>
+            <button type="button" onclick="editSchedule(${artistId}, ${item.id})">Sửa</button>
+            <button type="button" onclick="deleteSchedule(${artistId}, ${item.id})">Xóa</button>
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    function resetScheduleForm() {
+      scheduleIdInput.value = '';
+      scheduleTitleInput.value = '';
+      scheduleDateInput.value = '';
+      scheduleNoteInput.value = '';
+    }
+
+    function editSchedule(artistId, scheduleId) {
+      const item = getSchedulesByArtist(artistId).find((entry) => entry.id === scheduleId);
+      if (!item) return;
+
+      scheduleIdInput.value = item.id;
+      scheduleTitleInput.value = item.title;
+      scheduleDateInput.value = item.date;
+      scheduleNoteInput.value = item.note || '';
+    }
+
+    function deleteSchedule(artistId, scheduleId) {
+      artistSchedules[artistId] = getSchedulesByArtist(artistId).filter((entry) => entry.id !== scheduleId);
+      persistSchedules();
+      renderSchedules(artistId);
+    }
+
+    artistForm.addEventListener('submit', (event) => {
+      event.preventDefault();
+      const id = Number(artistIdInput.value);
+      if (!id) return alert('Vui lòng chọn nghệ sĩ cần chỉnh sửa từ bảng.');
+
+      const target = artists.find((item) => item.id === id);
+      if (!target) return alert('Không tìm thấy nghệ sĩ để cập nhật.');
+
+      target.name = artistNameInput.value.trim();
+      target.work = artistWorkInput.value.trim();
+      renderArtists();
+      resetForm();
+      alert('Cập nhật nghệ sĩ thành công.');
+    });
+
+    scheduleForm.addEventListener('submit', (event) => {
+      event.preventDefault();
+
+      const artistId = Number(scheduleArtistIdInput.value);
+      if (!artistId) return alert('Vui lòng chọn nghệ sĩ để quản lý lịch trình.');
+
+      const current = getSchedulesByArtist(artistId);
+      const scheduleId = Number(scheduleIdInput.value);
+
+      if (scheduleId) {
+        const target = current.find((entry) => entry.id === scheduleId);
+        if (!target) return;
+        target.title = scheduleTitleInput.value.trim();
+        target.date = scheduleDateInput.value;
+        target.note = scheduleNoteInput.value.trim();
+      } else {
+        current.push({
+          id: Date.now(),
+          title: scheduleTitleInput.value.trim(),
+          date: scheduleDateInput.value,
+          note: scheduleNoteInput.value.trim()
+        });
+      }
+
+      artistSchedules[artistId] = current;
+      persistSchedules();
+      renderSchedules(artistId);
+      resetScheduleForm();
+    });
+
+    cancelEditBtn.addEventListener('click', resetForm);
+    cancelScheduleEditBtn.addEventListener('click', resetScheduleForm);
+
+    window.startEdit = startEdit;
+    window.openSchedule = openSchedule;
+    window.editSchedule = editSchedule;
+    window.deleteSchedule = deleteSchedule;
+
+    renderArtists();
+  </script>
 </body>
 </html>

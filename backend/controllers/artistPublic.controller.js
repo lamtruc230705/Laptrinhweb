@@ -57,10 +57,11 @@ exports.getArtistProducts = async (req, res) => {
     const result = await pool.request()
       .input("artist_id", sql.Int, artistId)
       .query(`
-        SELECT product_id, name, price, image, stock
-        FROM products
-        WHERE artist_id = @artist_id AND status = 'active'
-        ORDER BY product_id DESC
+        SELECT p.id AS product_id, p.name, p.price, p.image, p.stock
+        FROM products p
+        INNER JOIN product_artists pa ON pa.product_id = p.id
+        WHERE pa.artist_id = @artist_id AND p.status = 'active'
+        ORDER BY p.id DESC
       `);
 
     return successResponse(res, "Lấy sản phẩm theo nghệ sĩ thành công", result.recordset);
