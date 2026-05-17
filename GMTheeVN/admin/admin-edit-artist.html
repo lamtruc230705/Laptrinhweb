@@ -18,6 +18,7 @@
     .back-btn { background: #eee; color: #333; border: 1.5px solid #dadada !important; }
     .main-btn { background: #0c61d5; color: #fff; border: 1.5px solid #1763be !important; }
     .main-btn:disabled { opacity: .65; cursor: not-allowed; }
+    #preview-img { display:block; margin:8px 0 10px; max-width:180px; border-radius:10px; border:1px solid #d7ecfa; }
   </style>
 </head>
 
@@ -136,6 +137,19 @@ Muộn rồi mà sao còn | 2021"></textarea>
       if (artist.image) { preview.src = APIClient.getImageUrl(artist.image); preview.style.maxWidth='180px'; }
     }
 
+
+
+    async function uploadArtistImageIfNeeded() {
+      const imageInput = document.getElementById('artistImage');
+      const file = imageInput.files?.[0];
+      if (!file) return null;
+
+      const formData = new FormData();
+      formData.append('image', file);
+      await APIClient.uploadImage(`/upload/artists/${artistId}/image`, formData);
+      return true;
+    }
+
     document.getElementById('artistForm').addEventListener('submit', async (e) => {
       e.preventDefault();
       const payload = {
@@ -153,8 +167,16 @@ Muộn rồi mà sao còn | 2021"></textarea>
         status: document.getElementById('status').value
       };
       await APIClient.updateAdminArtist(artistId, payload);
+      await uploadArtistImageIfNeeded();
       alert('Cập nhật nghệ sĩ thành công.');
       window.location.href='admin-artists.html';
+    });
+
+    document.getElementById('artistImage').addEventListener('change', (event) => {
+      const file = event.target.files?.[0];
+      if (!file) return;
+      const preview = document.getElementById('preview-img');
+      preview.src = URL.createObjectURL(file);
     });
 
     document.addEventListener('DOMContentLoaded', loadArtistDetail);
