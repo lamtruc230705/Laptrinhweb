@@ -11,12 +11,17 @@ VALUES
 ON DUPLICATE KEY UPDATE stage_name = stage_name;
 
 INSERT INTO artist_works (artist_id, title, release_year)
-SELECT id, 'Dare You To Death', 2025 FROM artists WHERE stage_name = 'Joong Archen';
+SELECT a.id, 'Dare You To Death', 2025 FROM artists a WHERE a.stage_name = 'Joong Archen'
+  AND NOT EXISTS (SELECT 1 FROM artist_works w WHERE w.artist_id = a.id AND w.title = 'Dare You To Death');
 INSERT INTO artist_works (artist_id, title, release_year)
-SELECT id, 'The Heart Killers', 2024 FROM artists WHERE stage_name = 'Joong Archen';
+SELECT a.id, 'The Heart Killers', 2024 FROM artists a WHERE a.stage_name = 'Joong Archen'
+  AND NOT EXISTS (SELECT 1 FROM artist_works w WHERE w.artist_id = a.id AND w.title = 'The Heart Killers');
 INSERT INTO artist_works (artist_id, title, release_year)
-SELECT id, 'Hidden Agenda', 2023 FROM artists WHERE stage_name = 'Joong Archen';
+SELECT a.id, 'Hidden Agenda', 2023 FROM artists a WHERE a.stage_name = 'Joong Archen'
+  AND NOT EXISTS (SELECT 1 FROM artist_works w WHERE w.artist_id = a.id AND w.title = 'Hidden Agenda');
 INSERT INTO artist_works (artist_id, title, release_year)
-SELECT id, 'Our Skyy 2', 2023 FROM artists WHERE stage_name = 'Joong Archen';
+SELECT a.id, 'Our Skyy 2', 2023 FROM artists a WHERE a.stage_name = 'Joong Archen'
+  AND NOT EXISTS (SELECT 1 FROM artist_works w WHERE w.artist_id = a.id AND w.title = 'Our Skyy 2');
 INSERT INTO artist_works (artist_id, title, release_year)
-SELECT id, 'The Warp Effect', 2023 FROM artists WHERE stage_name = 'Joong Archen';
+SELECT a.id, 'The Warp Effect', 2023 FROM artists a WHERE a.stage_name = 'Joong Archen'
+  AND NOT EXISTS (SELECT 1 FROM artist_works w WHERE w.artist_id = a.id AND w.title = 'The Warp Effect');
