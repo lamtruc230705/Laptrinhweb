@@ -208,7 +208,7 @@
 
             <div class="form-group">
                 <label for="password">Mật khẩu</label>
-                <input type="password" id="password" required minlength="6" placeholder="Tối thiểu 6 ký tự">
+                <input type="password" id="password" required minlength="6" placeholder="Ít nhất 6 ký tự bất kỳ">
             </div>
 
             <div class="form-group">
@@ -279,7 +279,7 @@
                 }
 
                 if (payload.password.length < 6) {
-                    showMessage('Mật khẩu phải có ít nhất 6 ký tự.');
+                    showMessage('Mật khẩu chỉ cần tối thiểu 6 ký tự (số/chữ bất kỳ).');
                     return;
                 }
 

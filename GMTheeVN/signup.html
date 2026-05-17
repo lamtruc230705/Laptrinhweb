@@ -280,6 +280,11 @@
             return;
         }
 
+        if (password.length < 6) {
+            showRegisterMessage('Mật khẩu chỉ cần tối thiểu 6 ký tự (số/chữ bất kỳ).');
+            return;
+        }
+
         if (password !== confirmPassword) {
             showRegisterMessage('Mật khẩu không khớp!');
             return;

@@ -18,6 +18,7 @@
     .back-btn { background: #eee; color: #333; border: 1.5px solid #dadada !important; }
     .main-btn { background: #0c61d5; color: #fff; border: 1.5px solid #1763be !important; }
     .main-btn:disabled { opacity: .65; cursor: not-allowed; }
+    #preview-img { display:block; margin:8px 0 10px; max-width:180px; border-radius:10px; border:1px solid #d7ecfa; }
   </style>
 </head>
 
@@ -99,6 +100,26 @@ Muộn rồi mà sao còn | 2021"></textarea>
       });
     }
 
+
+    function requireAdmin() {
+      const token = APIClient.getToken();
+      const user = APIClient.getCurrentUser();
+
+      if (!token || !user) {
+        alert('Bạn cần đăng nhập admin trước.');
+        window.location.href = '../login.html';
+        return false;
+      }
+
+      if (user.role !== 'admin') {
+        alert('Chỉ admin mới được sửa nghệ sĩ ở trang này.');
+        window.location.href = '../login.html';
+        return false;
+      }
+
+      return true;
+    }
+
     async function loadArtistUserOptions(selectedUserId = null) {
       const usersRes = await APIClient.getAdminUsers();
       const userSelect = document.getElementById('user_id');
@@ -113,6 +134,8 @@ Muộn rồi mà sao còn | 2021"></textarea>
     }
 
     async function loadArtistDetail() {
+      if (!requireAdmin()) return;
+
       if (!artistId) {
         alert('Thiếu id nghệ sĩ để chỉnh sửa.');
         window.location.href = 'admin-artists.html';
@@ -136,12 +159,40 @@ Muộn rồi mà sao còn | 2021"></textarea>
       if (artist.image) { preview.src = APIClient.getImageUrl(artist.image); preview.style.maxWidth='180px'; }
     }
 
+
+
+    async function uploadArtistImageIfNeeded() {
+      const imageInput = document.getElementById('artistImage');
+      const file = imageInput.files?.[0];
+      if (!file) return null;
+
+      const formData = new FormData();
+      formData.append('image', file);
+      await APIClient.uploadImage(`/upload/artists/${artistId}/image`, formData);
+      return true;
+    }
+
     document.getElementById('artistForm').addEventListener('submit', async (e) => {
       e.preventDefault();
+      if (!requireAdmin()) return;
+
+      const submitBtn = document.querySelector('.main-btn');
+      const userIdValue = Number(document.getElementById('user_id').value);
+
+      if (!artistId) {
+        alert('Thiếu id nghệ sĩ để chỉnh sửa.');
+        return;
+      }
+
+      if (!Number.isInteger(userIdValue) || userIdValue <= 0) {
+        alert('Vui lòng chọn Gmail tài khoản artist hợp lệ.');
+        return;
+      }
+
       const payload = {
         stage_name: document.getElementById('stage_name').value.trim(),
         full_name: document.getElementById('full_name').value.trim(),
-        user_id: Number(document.getElementById('user_id').value),
+        user_id: userIdValue,
         birth_date: document.getElementById('birth_date').value || null,
         artist_role: document.getElementById('artist_role').value.trim(),
         height: document.getElementById('height').value.trim(),
@@ -152,9 +203,26 @@ Muộn rồi mà sao còn | 2021"></textarea>
         works: parseWorksInput(document.getElementById('works').value),
         status: document.getElementById('status').value
       };
-      await APIClient.updateAdminArtist(artistId, payload);
-      alert('Cập nhật nghệ sĩ thành công.');
-      window.location.href='admin-artists.html';
+
+      try {
+        submitBtn.disabled = true;
+        await APIClient.updateAdminArtist(artistId, payload);
+        await uploadArtistImageIfNeeded();
+        alert('Cập nhật nghệ sĩ thành công.');
+        window.location.href = 'admin-artists.html';
+      } catch (error) {
+        console.error(error);
+        alert(error.message || 'Cập nhật nghệ sĩ thất bại. Vui lòng thử lại.');
+      } finally {
+        submitBtn.disabled = false;
+      }
+    });
+
+    document.getElementById('artistImage').addEventListener('change', (event) => {
+      const file = event.target.files?.[0];
+      if (!file) return;
+      const preview = document.getElementById('preview-img');
+      preview.src = URL.createObjectURL(file);
     });
 
     document.addEventListener('DOMContentLoaded', loadArtistDetail);
